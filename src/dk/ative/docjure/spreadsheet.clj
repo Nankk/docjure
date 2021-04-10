@@ -36,18 +36,31 @@
 (defmethod read-cell-value CellType/ERROR    [^CellValue cv _]
   (keyword (.name (FormulaError/forInt (.getErrorValue cv)))))
 
+(defn read-cell-cached [^Cell cell]
+  (case (.getCachedFormulaResultType cell)
+    CellType/STRING  (.getStringCellValue cell)
+    CellType/BOOLEAN (.getBooleanCellValue cell)
+    CellType/NUMERIC (if (DateUtil/isCellDateFormatted cell)
+                       (.getDateCellValue cell)
+                       (.getNumericCellValue cell))
+    CellType/ERROR   (keyword (.name (FormulaError/forInt (.getErrorCellValue cell))))
+    (.getStringCellValue cell)))
+
 (defmulti read-cell #(when % (.getCellType ^Cell %)))
 (defmethod read-cell CellType/BLANK     [_]     nil)
 (defmethod read-cell nil [_] nil)
 (defmethod read-cell CellType/STRING    [^Cell cell]  (.getStringCellValue cell))
 (defmethod read-cell CellType/FORMULA   [^Cell cell]
   (let [evaluator (.. cell getSheet getWorkbook
-                      getCreationHelper createFormulaEvaluator)
-        cv (.evaluate evaluator cell)]
-    (if (and (= CellType/NUMERIC (.getCellType cv))
-             (DateUtil/isCellDateFormatted cell))
-      (.getDateCellValue cell)
-      (read-cell-value cv false))))
+                      getCreationHelper createFormulaEvaluator)]
+    (try
+      (let [cv (.evaluate evaluator cell)]
+        (if (and (= CellType/NUMERIC (.getCellType cv))
+                 (DateUtil/isCellDateFormatted cell))
+          (.getDateCellValue cell)
+          (read-cell-value cv false)))
+      (catch Exception e
+        (read-cell-cached cell)))))
 (defmethod read-cell CellType/BOOLEAN   [^Cell cell]  (.getBooleanCellValue cell))
 (defmethod read-cell CellType/NUMERIC   [^Cell cell]
   (if (DateUtil/isCellDateFormatted cell)

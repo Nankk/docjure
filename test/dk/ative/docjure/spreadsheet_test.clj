@@ -18,7 +18,8 @@
              :1900-based-file "test/dk/ative/docjure/testdata/1900-based-dates.xlsx"
              :1904-based-file "test/dk/ative/docjure/testdata/1904-based-dates.xlsx"
              :simple "test/dk/ative/docjure/testdata/simple.xlsx"
-             :save-workbook-location "test/dk/ative/docjure/testdata/saved.xlsx"})
+             :save-workbook-location "test/dk/ative/docjure/testdata/saved.xlsx"
+             :textjoin "test/dk/ative/docjure/testdata/textjoin.xlsx"})
 
 (def datatypes-map {:A :text, :B :integer, :C :decimal, :D :date, :E :time, :F :date-time, :G :percentage, :H :fraction, :I :scientific, :J :date-formulae})
 (def formulae-map {:A :formula, :B :expected})
@@ -965,3 +966,10 @@
           loaded (load-workbook file)
           _ (io/delete-file file)]
       (test-loaded-workbook loaded))))
+
+(deftest notimplementedfunction-test
+  (let [file      (config :textjoin)
+        loaded    (load-workbook file)
+        worksheet (first (sheet-seq loaded))]
+    (testing  "Can fallback taking cached values when function is not implemented"
+      (is (= "abc,def,ghi" (read-cell (select-cell "D1" worksheet)))))))
