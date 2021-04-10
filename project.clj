@@ -1,8 +1,9 @@
-(defproject dk.ative/docjure "1.14.0"
+(defproject org.clojars.nankk/docjure "1.14.1-SNAPSHOT"
   :description "Easily read and write Office documents from Clojure."
-  :url "http://github.com/mjul/docjure"
+  :url "https://github.com/Nankk/docjure"
   :license {:name "MIT License"
             :url "http://http://en.wikipedia.org/wiki/MIT_License"}
+  :repositories {"clojars" {:url "https://clojars.org/repo" :sign-releases false}}
   :dependencies [[org.clojure/clojure "1.10.0"]
                  [org.apache.poi/poi "4.1.0"]
                  [org.apache.poi/poi-ooxml "4.1.0"]]
